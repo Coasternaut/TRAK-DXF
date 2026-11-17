@@ -353,7 +353,7 @@ def make_pdf(pdf_path, dxf_path, loops, open_components, ignored,
              decimals, units_label, tolerance):
     styles = getSampleStyleSheet()
     story = [
-        Paragraph("DXF Coordinate Sheet", styles["Title"]),
+        Paragraph(Path(dxf_path).stem, styles["Title"]),
         Paragraph(f"Source: {Path(dxf_path).name}", styles["Normal"]),
         Paragraph(
             f"Units: {units_label} &nbsp;&nbsp; | &nbsp;&nbsp; "
