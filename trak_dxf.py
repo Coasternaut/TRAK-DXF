@@ -421,9 +421,13 @@ def make_pdf(pdf_path, dxf_path, loops, open_components, ignored,
 
             # End X and Y - Red background
             ("BACKGROUND", (4, 1), (5, -1), colors.HexColor("#FFC7CE")),
+            # End coordinates - Bold
+            ("FONTNAME", (4, 1), (5, -1), "Helvetica-Bold"),
 
             # Center X and Y - Blue background
             ("BACKGROUND", (6, 1), (7, -1), colors.HexColor("#BDD7EE")),
+            # Center coordinates - Italic
+            ("FONTNAME", (6, 1), (7, -1), "Helvetica-Oblique"),
         ]))
         story.append(table)
         story.append(Spacer(1, 0.22 * inch))
@@ -471,9 +475,13 @@ def make_pdf(pdf_path, dxf_path, loops, open_components, ignored,
 
                 # End X and Y - Red background
                 ("BACKGROUND", (4, 1), (5, -1), colors.HexColor("#FFC7CE")),
+                # End coordinates - Bold
+                ("FONTNAME", (4, 1), (5, -1), "Helvetica-Bold"),
 
                 # Center X and Y - Blue background
                 ("BACKGROUND", (6, 1), (7, -1), colors.HexColor("#BDD7EE")),
+                # Center coordinates - Italic
+                ("FONTNAME", (6, 1), (7, -1), "Helvetica-Oblique"),
             ]))
             story.append(table)
             story.append(Spacer(1, 0.15 * inch))
