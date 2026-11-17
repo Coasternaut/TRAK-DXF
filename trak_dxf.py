@@ -363,15 +363,15 @@ def make_pdf(pdf_path, dxf_path, loops, open_components, ignored,
             f"&nbsp;&nbsp; | &nbsp;&nbsp; Connection tolerance: {tolerance:g}",
             styles["Normal"]
         ),
-        Paragraph(f"Generated: {generation_date}", styles["Normal"]),
-        Spacer(1, 0.18 * inch),
         Paragraph(
             "Arc direction is given while traveling from the listed start "
             "point to the listed end point. Positive sweep = CCW; negative = CW.",
             styles["BodyText"]
         ),
-        Spacer(1, 0.15 * inch)
+        Paragraph(f"Generated: {generation_date}", styles["Normal"]),
+        Spacer(1, 0.1 * inch)
     ]
+
 
     headers = [
         "Seg.", "Type", "Start X", "Start Y", "End X", "End Y",
