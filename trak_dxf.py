@@ -282,6 +282,68 @@ def group_loops(segments, circles, tolerance):
 
     return loops, open_components
 
+def is_hole_loop(loop):
+    """Return True if loop contains exactly one full-circle arc."""
+    if len(loop) != 1:
+        return False
+
+    segment = loop[0]
+
+    if segment["type"] != "ARC":
+        return False
+
+    start = segment["start"]
+    end = segment["end"]
+
+    same_point = (
+        abs(start[0] - end[0]) < 0.001 and
+        abs(start[1] - end[1]) < 0.001
+    )
+
+    full_circle = abs(abs(segment["sweep"]) - 360) < 0.001
+
+    return same_point and full_circle
+
+def extract_holes(loops):
+    holes = []
+
+    for loop in loops:
+        if is_hole_loop(loop):
+            arc = loop[0]
+
+            holes.append({
+                "x": arc["center"][0],
+                "y": arc["center"][1],
+                "diameter": 2 * arc["radius"]
+            })
+
+    return holes
+
+def create_hole_table(holes):
+    data = [["Hole", "X", "Y", "Diameter"]]
+
+    for i, hole in enumerate(holes, start=1):
+        data.append([
+            str(i),
+            f'{hole["x"]:.3f}',
+            f'{hole["y"]:.3f}',
+            f'{hole["diameter"]:.3f}'
+        ])
+
+    table = Table(data, repeatRows=1)
+
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0),
+         colors.HexColor("#263746")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("BACKGROUND", (1, 1), (2, -1),
+         colors.HexColor("#BDD7EE")),
+        ("GRID", (0, 0), (-1, -1), 0.35, colors.grey),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+    ]))
+
+    return table
 
 def fmt(value, decimals):
     return f"{value:.{decimals}f}"
