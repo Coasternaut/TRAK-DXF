@@ -23,7 +23,7 @@ from tkinter import filedialog, messagebox, simpledialog
 
 import ezdxf
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import landscape, letter
+from reportlab.lib.pagesizes import portrait, letter
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.platypus import (
@@ -407,9 +407,9 @@ def make_pdf(pdf_path, dxf_path, loops, open_components, ignored,
         ))
 
     doc = SimpleDocTemplate(
-        str(pdf_path), pagesize=landscape(letter),
+        str(pdf_path), pagesize=portrait(letter),
         rightMargin=0.35*inch, leftMargin=0.35*inch,
-        topMargin=0.4*inch, bottomMargin=0.4*inch
+        topMargin=0.2*inch, bottomMargin=0.2*inch
     )
     doc.build(story)
 
