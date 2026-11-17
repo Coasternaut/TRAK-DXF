@@ -23,13 +23,14 @@ from tkinter import filedialog, messagebox, simpledialog
 
 import ezdxf
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import landscape, letter
+from reportlab.lib.pagesizes import portrait, letter
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
 )
 
+from datetime import datetime
 
 @dataclass
 class Segment:
@@ -282,6 +283,68 @@ def group_loops(segments, circles, tolerance):
 
     return loops, open_components
 
+def is_hole_loop(loop):
+    """Return True if loop contains exactly one full-circle arc."""
+    if len(loop) != 1:
+        return False
+
+    segment = loop[0]
+
+    if segment["type"] != "ARC":
+        return False
+
+    start = segment["start"]
+    end = segment["end"]
+
+    same_point = (
+        abs(start[0] - end[0]) < 0.001 and
+        abs(start[1] - end[1]) < 0.001
+    )
+
+    full_circle = abs(abs(segment["sweep"]) - 360) < 0.001
+
+    return same_point and full_circle
+
+def extract_holes(loops):
+    holes = []
+
+    for loop in loops:
+        if is_hole_loop(loop):
+            arc = loop[0]
+
+            holes.append({
+                "x": arc["center"][0],
+                "y": arc["center"][1],
+                "diameter": 2 * arc["radius"]
+            })
+
+    return holes
+
+def create_hole_table(holes):
+    data = [["Hole", "X", "Y", "Diameter"]]
+
+    for i, hole in enumerate(holes, start=1):
+        data.append([
+            str(i),
+            f'{hole["x"]:.3f}',
+            f'{hole["y"]:.3f}',
+            f'{hole["diameter"]:.3f}'
+        ])
+
+    table = Table(data, repeatRows=1)
+
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0),
+         colors.HexColor("#263746")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("BACKGROUND", (1, 1), (2, -1),
+         colors.HexColor("#BDD7EE")),
+        ("GRID", (0, 0), (-1, -1), 0.35, colors.grey),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+    ]))
+
+    return table
 
 def fmt(value, decimals):
     return f"{value:.{decimals}f}"
@@ -290,8 +353,9 @@ def fmt(value, decimals):
 def make_pdf(pdf_path, dxf_path, loops, open_components, ignored,
              decimals, units_label, tolerance):
     styles = getSampleStyleSheet()
+    generation_date = datetime.now().strftime("%A %Y-%m-%d %I:%M:%S %p")
     story = [
-        Paragraph("DXF Coordinate Sheet", styles["Title"]),
+        Paragraph(Path(dxf_path).stem, styles["Title"]),
         Paragraph(f"Source: {Path(dxf_path).name}", styles["Normal"]),
         Paragraph(
             f"Units: {units_label} &nbsp;&nbsp; | &nbsp;&nbsp; "
@@ -299,14 +363,15 @@ def make_pdf(pdf_path, dxf_path, loops, open_components, ignored,
             f"&nbsp;&nbsp; | &nbsp;&nbsp; Connection tolerance: {tolerance:g}",
             styles["Normal"]
         ),
-        Spacer(1, 0.18 * inch),
         Paragraph(
             "Arc direction is given while traveling from the listed start "
             "point to the listed end point. Positive sweep = CCW; negative = CW.",
             styles["BodyText"]
         ),
-        Spacer(1, 0.15 * inch)
+        Paragraph(f"Generated: {generation_date}", styles["Normal"]),
+        Spacer(1, 0.1 * inch)
     ]
+
 
     headers = [
         "Seg.", "Type", "Start X", "Start Y", "End X", "End Y",
@@ -353,6 +418,19 @@ def make_pdf(pdf_path, dxf_path, loops, open_components, ignored,
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("TOPPADDING", (0, 0), (-1, -1), 4),
             ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            
+            # Start X and Y - Green background
+            ("BACKGROUND", (2, 1), (3, -1), colors.HexColor("#C6EFCE")),
+
+            # End X and Y - Red background
+            ("BACKGROUND", (4, 1), (5, -1), colors.HexColor("#FFC7CE")),
+            # End coordinates - Bold
+            ("FONTNAME", (4, 1), (5, -1), "Helvetica-Bold"),
+
+            # Center X and Y - Blue background
+            ("BACKGROUND", (6, 1), (7, -1), colors.HexColor("#BDD7EE")),
+            # Center coordinates - Italic
+            ("FONTNAME", (6, 1), (7, -1), "Helvetica-Oblique"),
         ]))
         story.append(table)
         story.append(Spacer(1, 0.22 * inch))
@@ -394,6 +472,19 @@ def make_pdf(pdf_path, dxf_path, loops, open_components, ignored,
                 ("GRID", (0, 0), (-1, -1), 0.35, colors.grey),
                 ("FONTSIZE", (0, 0), (-1, -1), 7),
                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                
+                # Start X and Y - Green background
+                ("BACKGROUND", (2, 1), (3, -1), colors.HexColor("#C6EFCE")),
+
+                # End X and Y - Red background
+                ("BACKGROUND", (4, 1), (5, -1), colors.HexColor("#FFC7CE")),
+                # End coordinates - Bold
+                ("FONTNAME", (4, 1), (5, -1), "Helvetica-Bold"),
+
+                # Center X and Y - Blue background
+                ("BACKGROUND", (6, 1), (7, -1), colors.HexColor("#BDD7EE")),
+                # Center coordinates - Italic
+                ("FONTNAME", (6, 1), (7, -1), "Helvetica-Oblique"),
             ]))
             story.append(table)
             story.append(Spacer(1, 0.15 * inch))
@@ -407,9 +498,9 @@ def make_pdf(pdf_path, dxf_path, loops, open_components, ignored,
         ))
 
     doc = SimpleDocTemplate(
-        str(pdf_path), pagesize=landscape(letter),
+        str(pdf_path), pagesize=portrait(letter),
         rightMargin=0.35*inch, leftMargin=0.35*inch,
-        topMargin=0.4*inch, bottomMargin=0.4*inch
+        topMargin=0.2*inch, bottomMargin=0.2*inch
     )
     doc.build(story)
 
