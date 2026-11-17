@@ -30,6 +30,7 @@ from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
 )
 
+from datetime import datetime
 
 @dataclass
 class Segment:
@@ -352,6 +353,7 @@ def fmt(value, decimals):
 def make_pdf(pdf_path, dxf_path, loops, open_components, ignored,
              decimals, units_label, tolerance):
     styles = getSampleStyleSheet()
+    generation_date = datetime.now().strftime("%A %Y-%m-%d %I:%M:%S %p")
     story = [
         Paragraph(Path(dxf_path).stem, styles["Title"]),
         Paragraph(f"Source: {Path(dxf_path).name}", styles["Normal"]),
@@ -361,6 +363,7 @@ def make_pdf(pdf_path, dxf_path, loops, open_components, ignored,
             f"&nbsp;&nbsp; | &nbsp;&nbsp; Connection tolerance: {tolerance:g}",
             styles["Normal"]
         ),
+        Paragraph(f"Generated: {generation_date}", styles["Normal"]),
         Spacer(1, 0.18 * inch),
         Paragraph(
             "Arc direction is given while traveling from the listed start "
