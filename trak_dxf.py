@@ -353,6 +353,15 @@ def make_pdf(pdf_path, dxf_path, loops, open_components, ignored,
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("TOPPADDING", (0, 0), (-1, -1), 4),
             ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            
+            # Start X and Y - Green background
+            ("BACKGROUND", (2, 1), (3, -1), colors.HexColor("#C6EFCE")),
+
+            # End X and Y - Red background
+            ("BACKGROUND", (4, 1), (5, -1), colors.HexColor("#FFC7CE")),
+
+            # Center X and Y - Blue background
+            ("BACKGROUND", (6, 1), (7, -1), colors.HexColor("#BDD7EE")),
         ]))
         story.append(table)
         story.append(Spacer(1, 0.22 * inch))
@@ -394,6 +403,15 @@ def make_pdf(pdf_path, dxf_path, loops, open_components, ignored,
                 ("GRID", (0, 0), (-1, -1), 0.35, colors.grey),
                 ("FONTSIZE", (0, 0), (-1, -1), 7),
                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                
+                # Start X and Y - Green background
+                ("BACKGROUND", (2, 1), (3, -1), colors.HexColor("#C6EFCE")),
+
+                # End X and Y - Red background
+                ("BACKGROUND", (4, 1), (5, -1), colors.HexColor("#FFC7CE")),
+
+                # Center X and Y - Blue background
+                ("BACKGROUND", (6, 1), (7, -1), colors.HexColor("#BDD7EE")),
             ]))
             story.append(table)
             story.append(Spacer(1, 0.15 * inch))
